@@ -122,16 +122,42 @@ def send_email(html: str, subject: str = "Your Daily AI News Brief") -> bool:
             html_content=Content("text/html", html)
         )
         
-        # Send email
-        sg = SendGridAPIClient(api_key=CFG.SENDGRID_API_KEY)
-        response = sg.send(message)
-        
-        if response.status_code in [200, 201, 202]:
-            logger.info(f"Email sent successfully to {CFG.EMAIL_TO}")
-            return True
-        else:
-            logger.error(f"Failed to send email: {response.status_code} - {response.body}")
-            return False
+        # Send email with error handling
+        try:
+            sg = SendGridAPIClient(api_key=CFG.SENDGRID_API_KEY)
+            response = sg.send(message)
+            
+            if response.status_code in [200, 201, 202]:
+                logger.info(f"Email sent successfully to {CFG.EMAIL_TO}")
+                return True
+            else:
+                logger.error(f"Failed to send email: {response.status_code} - {response.body}")
+                return False
+                
+        except TypeError as e:
+            if "proxies" in str(e):
+                # Handle SendGrid version compatibility issue
+                logger.warning("SendGrid version compatibility issue detected, trying alternative approach")
+                import requests
+                headers = {
+                    'Authorization': f'Bearer {CFG.SENDGRID_API_KEY}',
+                    'Content-Type': 'application/json'
+                }
+                data = {
+                    'personalizations': [{'to': [{'email': CFG.EMAIL_TO}]}],
+                    'from': {'email': CFG.EMAIL_FROM},
+                    'subject': subject,
+                    'content': [{'type': 'text/html', 'value': html}]
+                }
+                response = requests.post('https://api.sendgrid.com/v3/mail/send', headers=headers, json=data)
+                if response.status_code in [200, 201, 202]:
+                    logger.info(f"Email sent successfully to {CFG.EMAIL_TO}")
+                    return True
+                else:
+                    logger.error(f"Failed to send email: {response.status_code} - {response.text}")
+                    return False
+            else:
+                raise e
             
     except Exception as e:
         logger.error(f"Error sending email: {e}")
