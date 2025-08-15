@@ -178,7 +178,7 @@ def main():
         else:
             # Send email
             logger.info("Sending email...")
-            subject = f"Daily AI News Brief - {date_str}"
+            subject = f"Daily News Brief - {date_str}"
             success = send_email(html, subject)
             
             if success:

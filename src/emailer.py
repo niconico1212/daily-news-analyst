@@ -94,7 +94,7 @@ def render_email_html(articles: List[Dict], date_str: str) -> str:
     
     return html
 
-def send_email(html: str, subject: str = "Your Daily AI News Brief") -> bool:
+def send_email(html: str, subject: str = "Your Daily News Brief") -> bool:
     """
     Send email via SendGrid.
     
@@ -114,12 +114,17 @@ def send_email(html: str, subject: str = "Your Daily AI News Brief") -> bool:
         return False
     
     try:
+        # Sanitize subject and content to prevent header issues
+        import re
+        sanitized_subject = re.sub(r'[^\x20-\x7E]', '', subject)[:100]  # Remove non-ASCII chars, limit length
+        sanitized_html = re.sub(r'[^\x20-\x7E\xA0-\xFF]', '', html)  # Remove problematic chars but keep some Unicode
+        
         # Create SendGrid message
         message = Mail(
             from_email=Email(CFG.EMAIL_FROM),
             to_emails=To(CFG.EMAIL_TO),
-            subject=subject,
-            html_content=Content("text/html", html)
+            subject=sanitized_subject,
+            html_content=Content("text/html", sanitized_html)
         )
         
         # Send email with error handling
@@ -146,8 +151,8 @@ def send_email(html: str, subject: str = "Your Daily AI News Brief") -> bool:
                 data = {
                     'personalizations': [{'to': [{'email': CFG.EMAIL_TO}]}],
                     'from': {'email': CFG.EMAIL_FROM},
-                    'subject': subject,
-                    'content': [{'type': 'text/html', 'value': html}]
+                    'subject': sanitized_subject,
+                    'content': [{'type': 'text/html', 'value': sanitized_html}]
                 }
                 response = requests.post('https://api.sendgrid.com/v3/mail/send', headers=headers, json=data)
                 if response.status_code in [200, 201, 202]:
