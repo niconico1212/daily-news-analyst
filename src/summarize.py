@@ -69,8 +69,20 @@ def summarize_articles(items: List[Dict]) -> List[str]:
         logger.error("No OpenAI API key configured")
         return []
     
-    # Configure OpenAI client
-    client = openai.OpenAI(api_key=CFG.OPENAI_API_KEY)
+    # Configure OpenAI client with error handling
+    try:
+        client = openai.OpenAI(api_key=CFG.OPENAI_API_KEY)
+    except TypeError as e:
+        if "proxies" in str(e):
+            # Handle OpenAI client compatibility issue
+            logger.warning("OpenAI client compatibility issue detected, trying alternative approach")
+            import httpx
+            client = openai.OpenAI(
+                api_key=CFG.OPENAI_API_KEY,
+                http_client=httpx.Client()
+            )
+        else:
+            raise e
     
     summaries = []
     
