@@ -20,18 +20,22 @@ from .config import CFG
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Default RSS feeds for general news (politics, global, tech, etc.)
+# Default RSS feeds for your preferred news sources
 DEFAULT_RSS_FEEDS = [
-    "https://feeds.npr.org/1001/rss.xml",  # NPR General News
     "https://feeds.bbci.co.uk/news/rss.xml",  # BBC General News
     "https://feeds.bbci.co.uk/news/politics/rss.xml",  # BBC Politics
     "https://feeds.bbci.co.uk/news/world/rss.xml",  # BBC World News
     "https://www.theguardian.com/world/rss",  # The Guardian World
     "https://www.theguardian.com/politics/rss",  # The Guardian Politics
+    "https://www.theguardian.com/international/rss",  # The Guardian International
     "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",  # NYT World
     "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml",  # NYT Politics
+    "https://rss.nytimes.com/services/xml/rss/nyt/International.xml",  # NYT International
     "https://feeds.foxnews.com/foxnews/latest",  # Fox News Latest
     "https://feeds.foxnews.com/foxnews/politics",  # Fox News Politics
+    "https://feeds.foxnews.com/foxnews/world",  # Fox News World
+    "https://www.aljazeera.com/xml/rss/all.xml",  # Al Jazeera All News
+    "https://www.aljazeera.com/xml/rss/world.xml",  # Al Jazeera World
 ]
 
 def fetch_nyt_articles(query: str) -> List[Dict]:
@@ -119,7 +123,7 @@ def fetch_newsapi_articles(query: str) -> List[Dict]:
         params["sources"] = ",".join(CFG.APPROVED_SOURCES)
     else:
         # Default to major news sources if no approved sources specified
-        params["sources"] = "npr,bbc-news,fox-news"
+        params["sources"] = "the-new-york-times,the-guardian,bbc-news,fox-news,al-jazeera-english"
     
     try:
         response = requests.get(url, params=params, timeout=30)
