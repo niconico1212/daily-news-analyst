@@ -1,0 +1,40 @@
+name: Daily AI News Brief
+
+on:
+  schedule:
+    # Run at 7:07 AM Chicago time (12:07 UTC)
+    - cron: '7 12 * * *'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  generate-and-send:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run daily news brief
+      env:
+        NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+        EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+        EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        TIMEZONE: ${{ secrets.TIMEZONE }}
+        MAX_ARTICLES: ${{ secrets.MAX_ARTICLES }}
+        MIN_CHARS_PER_ARTICLE: ${{ secrets.MIN_CHARS_PER_ARTICLE }}
+        APPROVED_SOURCES: ${{ secrets.APPROVED_SOURCES }}
+      run: |
+        python -m src.main --query "AI OR artificial intelligence"
