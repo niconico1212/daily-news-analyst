@@ -2,8 +2,8 @@ name: Daily AI News Brief
 
 on:
   schedule:
-    # Run at 7:07 AM Chicago time (12:07 UTC)
-    - cron: '7 12 * * *'
+    # Run at 12:10 PM Chicago time (18:10 UTC during daylight saving time)
+    - cron: '10 18 * * *'
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
